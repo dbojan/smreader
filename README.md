@@ -1,4 +1,5 @@
-# SM reader
+# SM ebook reader
+
 Mirror or old MS (Microsoft) book reader, with white page on black background
 
 Mobile and desktop.

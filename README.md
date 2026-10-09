@@ -12,3 +12,8 @@ PWA app, preview available for now.
 "*A thing of beauty is a joy for ever ...*"
 
 John Keats, Endymion
+
+
+<hr>
+
+![neuro](neuro.png)

@@ -1,5 +1,5 @@
 // SM Reader - app.js
-// last modified (utc): 2026-10-18-15-30-19
+// last modified (utc): 2026-10-18-23-00-41
 // instructions: on modify, update string.
 import './foliate-js/view.js'
 
@@ -379,6 +379,11 @@ const FLAGS = {
   // Blink (Chrome/Opera) does not. true = opt the book document out of that inflation (text-size-adjust: none); false = leave the
   // browser's default. Needs a real-device test to confirm.
   SWITCH_DISABLE_MOBILE_TEXT_INFLATION: true,
+  // blink-autosizing-viewport-meta (2026-10-18-23-00-40): text-size-adjust alone does not stop Blink (Chrome/Opera on Android)
+  // from inflating the book text; a device-width viewport meta on the section document does. On every section load, when the
+  // document has no <meta name="viewport"> of its own, one is inserted (below, in the view 'load' handler).
+  // true = insert it; false = leave the section document as the book wrote it.
+  SWITCH_DISABLE_BLINK_TEXT_AUTOSIZING: true,
   // install-toast (2026-10-09-12-00-47): the toasts "Install complete" (the offline copy and the dictionary that were missing at
   // the start are both done) and "Dictionary updated". false = no such toast. Never shown while Settings is open (its status
   // lines show the result), never after a failure.
@@ -440,8 +445,8 @@ const FLAGS = {
   SWITCH_SHOW_COMPONENTS_TITLE_IN_APP: true,
   // 2026-09-27-16-55-53 (chrome-font-pct): header/position font sizes as a
   // percentage of the content font size. Both devtools-flippable, read live.
-  SWITCH_TOP_MENU_FONT_SIZE_IN_PERCENTAGE: 90,
-  SWITCH_BOTTOM_POSITION_FONT_SIZE_IN_PERCENTAGE: 90,
+  SWITCH_TOP_MENU_FONT_SIZE_IN_PERCENTAGE: 91,
+  SWITCH_BOTTOM_POSITION_FONT_SIZE_IN_PERCENTAGE: 91,
   // ...default footer-% decimals for installs with no stored choice yet
   // (a stored pctDecimals always wins; change the combo to override).
   SWITCH_DEFAULT_BOTTOM_POSITION_DECIMALS_DIGITS: 3,
@@ -1327,6 +1332,20 @@ async function openBook(id) {
   hidePopup()
   view.addEventListener('link', onBookLink) // footnote popup (cancels the jump for note markers)
   view.addEventListener('load', e => {
+    // blink-autosizing-viewport-meta (2026-10-18-23-00-40): Blink (Chrome/Opera on Android) ignores text-size-adjust and inflates
+    // a section that has no viewport meta; add a device-width one before the first layout, but never override a viewport the book
+    // set itself.
+    if (FLAGS.SWITCH_DISABLE_BLINK_TEXT_AUTOSIZING !== false) {
+      try {
+        const doc = e.detail.doc
+        if (doc?.head && !doc.querySelector('meta[name="viewport"]')) {
+          const m = doc.createElement('meta')
+          m.name = 'viewport'
+          m.content = 'width=device-width, initial-scale=1'
+          doc.head.appendChild(m)
+        }
+      } catch {}
+    }
     if (FLAGS.SWITCH_SCALE_ABSOLUTE_FONT_SIZES !== false) { // before wireContentDoc and before the first layout of this section
       const c = scaleAbsoluteSizes(e.detail.doc)
       if (c.rules || c.inline) debugBeacon('abs-font-sizes', { rules: c.rules, inline: c.inline })
@@ -5379,7 +5398,7 @@ async function initInstallToast() {
    the Reload button (a plain reload, not "Load fresh app"). A first install is not an update (the page had no controller),
    and neither is a worker added after the user removed the offline copy in this session. A check for a newer worker is made
    when the app becomes visible again, at most once an hour. */
-const APP_VERSION = '2026-10-18-15-30-19'
+const APP_VERSION = '2026-10-18-23-00-41'
 let appUpdateReady = false, appUpdateCheckedAt = 0, swTouched = false
 function renderAppUpdate() {
   $('#app-update-row')?.classList.toggle('hidden', !appUpdateReady)

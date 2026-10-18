@@ -1,5 +1,5 @@
 // SM Reader - app.js
-// last modified (utc): 2026-10-10-21-24-31
+// last modified (utc): 2026-10-18-15-30-19
 // instructions: on modify, update string.
 import './foliate-js/view.js'
 
@@ -374,6 +374,11 @@ const FLAGS = {
   // false = leave the book's absolute sizes alone (the setting then does nothing for such books).
   SWITCH_SCALE_ABSOLUTE_FONT_SIZES: true,
   SWITCH_FORCE_FONT_ON_TEXT_BLOCKS: true, // force-book-font (2026-10-10-15-20-47): true = the font chosen in Settings also wins over a font-family the book sets on p, li, blockquote, dd (headings and spans keep the book's); false = the book's font rules on those win
+  // ff-text-inflation (2026-10-18-15-30-19): on Firefox for Android the book is one very wide multi-column document inside the iframe
+  // (paginator column-width), so the browser treats it as a desktop page and inflates all of its text (about 2x, at every size), while
+  // Blink (Chrome/Opera) does not. true = opt the book document out of that inflation (text-size-adjust: none); false = leave the
+  // browser's default. Needs a real-device test to confirm.
+  SWITCH_DISABLE_MOBILE_TEXT_INFLATION: true,
   // install-toast (2026-10-09-12-00-47): the toasts "Install complete" (the offline copy and the dictionary that were missing at
   // the start are both done) and "Dictionary updated". false = no such toast. Never shown while Settings is open (its status
   // lines show the result), never after a failure.
@@ -1226,6 +1231,7 @@ function getCSS() {
     }
     html {
       font-size: ${settings.fontSize}px !important; /* scale-absolute-font-sizes: on the root, so the book's own body ratio (Calibre: .calibre { font-size: 1.25em }) and its em / rem sizes multiply on top of it */
+      ${FLAGS.SWITCH_DISABLE_MOBILE_TEXT_INFLATION !== false ? 'text-size-adjust: none; -webkit-text-size-adjust: none; -moz-text-size-adjust: none;' : ''}
     }
     body {
       font-family: ${currentFontFamily()};
@@ -1972,11 +1978,7 @@ function buildGotoMenu() {
   // changes reusing the Settings setters (Settings screen itself unchanged)
   if (gotoMenuMode === 'fontthemes') {
     addItem('‹ Back', () => { gotoMenuMode = 'main'; buildGotoMenu() }, false, true)
-    addItem(`Font size: ${settings.fontSize}`, () => {
-      const v = parseFloat(prompt('Font size (px):', String(settings.fontSize)))
-      if (v > 0) { settings.fontSize = v; saveSettings(); applyStyles() }
-      buildGotoMenu()
-    }, false, true)
+    addItem(`Font size: ${settings.fontSize} ▸`, () => { gotoMenuMode = 'fontsizes'; buildGotoMenu() }, false, true)
     const fontLabel = settings.uploadedFontName || settings.customFontName
       || ({ jost: 'Jost', 'system-sans': 'Sans serif', 'system-serif': 'Serif' }[(BUNDLED_FONTS.find(f => f.id === settings.fontId) || BUNDLED_FONTS[0]).id])
     addItem(`Font: ${fontLabel}`, () => {}, true, true)
@@ -2003,6 +2005,28 @@ function buildGotoMenu() {
         themeSel = n
         applyThemeColors(t)
         saveSettings(); applyTheme(); buildGotoMenu()
+      }, false, true)
+    }
+    menu.classList.add('long')
+    menu.style.maxHeight = Math.max(160, window.innerHeight - (parseFloat(menu.style.top) || 0) - 12) + 'px'
+    return
+  }
+
+  // font size submenu (fontsize-submenu, 2026-10-18-15-30-19): Custom… (prompt), + font / - font change by 1,
+  // then the fixed sizes; all keep the menu open for quick tweaks, like the font and theme rows
+  if (gotoMenuMode === 'fontsizes') {
+    addItem('‹ Back', () => { gotoMenuMode = 'fontthemes'; buildGotoMenu() }, false, true)
+    addItem('Custom…', () => {
+      const v = parseFloat(prompt('Font size (px):', String(settings.fontSize)))
+      if (v > 0) { settings.fontSize = v; saveSettings(); applyStyles() }
+      buildGotoMenu()
+    }, false, true)
+    addItem('+ font', () => { settings.fontSize = Math.max(1, settings.fontSize + 1); saveSettings(); applyStyles(); buildGotoMenu() }, false, true)
+    addItem('- font', () => { settings.fontSize = Math.max(1, settings.fontSize - 1); saveSettings(); applyStyles(); buildGotoMenu() }, false, true)
+    addSep()
+    for (const s of SIZE_STEPS) {
+      addItem((settings.fontSize === s ? '✓ ' : '') + s, () => {
+        settings.fontSize = s; saveSettings(); applyStyles(); buildGotoMenu()
       }, false, true)
     }
     menu.classList.add('long')
@@ -5355,7 +5379,7 @@ async function initInstallToast() {
    the Reload button (a plain reload, not "Load fresh app"). A first install is not an update (the page had no controller),
    and neither is a worker added after the user removed the offline copy in this session. A check for a newer worker is made
    when the app becomes visible again, at most once an hour. */
-const APP_VERSION = '2026-10-10-21-24-31'
+const APP_VERSION = '2026-10-18-15-30-19'
 let appUpdateReady = false, appUpdateCheckedAt = 0, swTouched = false
 function renderAppUpdate() {
   $('#app-update-row')?.classList.toggle('hidden', !appUpdateReady)

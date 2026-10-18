@@ -16,4 +16,4 @@ John Keats, Endymion
 
 <hr>
 
-![neuro](neuro.png)
+![neuro](screenshots/neuro.png)

@@ -1,4 +1,7 @@
 # SM reader
+
+v 2026-10-18-15-30-19
+
 Mirror or old MS (Microsoft) book reader, with white page on black background
 
 Mobile and desktop.

@@ -1,0 +1,494 @@
+/* SM Reader - style.css */
+/* last modified (utc): 2026-10-10-20-52-34 */
+/* instructions: on modify, update string. */
+@font-face {
+  font-family: 'Jost';
+  src: url('../fonts/Jost.ttf') format('truetype-variations');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+:root {
+  --surround: #000;
+  --page-bg: #fffdf5;      /* cream, measured-ish from Reader screenshots */
+  --page-text: #1a1a1a;
+  --sidebar-1: #7a0000;
+  --sidebar-2: #4a0000;
+  --sidebar-text: #f5e9e9;
+  --accent: #b23a3a;
+  --ui-font: 'Jost', system-ui, sans-serif;
+
+  /* page geometry, measured from MS Reader screenshots (see spec.md section 12) */
+  --page-ratio: 0.75;        /* width : height, ~3:4 */
+  --page-height-vh: 88;      /* page height as % of viewport height */
+  --page-margin-pct: 11;     /* inner text margin, % of page width, each side */
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: var(--surround);
+  font-family: var(--ui-font);
+  color: var(--sidebar-text);
+  overflow: hidden;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ---------- app shell ---------- */
+
+#app {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+#goto-menu {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: #f2ecd8;
+  color: #222;
+  border: 1px solid #999;
+  box-shadow: 2px 2px 8px rgba(0,0,0,.5);
+  min-width: 190px;
+  z-index: 50;
+  display: none;
+}
+#goto-menu.show { display: block; }
+#goto-menu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #ccc4a8;
+  padding: 8px 14px;
+  font-size: 14px;
+}
+#goto-menu button:hover { background: #e4dcc0; }
+#goto-menu button:disabled { color: #999; cursor: default; }
+#goto-menu .separator { border-bottom: 1px solid #999; margin: 2px 0; }
+#goto-menu button.with-icon { display: flex; align-items: center; gap: 10px; }
+#goto-menu .mi { width: 16px; height: 16px; flex: none; display: inline-flex; }
+#goto-menu .mi svg { display: block; }
+
+/* ---------- main viewport (dark surround + page) ---------- */
+
+#main {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+#book-page {
+  position: relative;
+  z-index: 2;
+  background: var(--page-bg);
+  box-shadow: var(--page-shadow, none); /* Settings > Page shadow (app.js applyColorVars) */
+  /* rounded-corners (2026-09-29-22-00-06): --page-radius comes from
+     SWITCH_DEFAULT_ROUNDED_CORNERS_BORDER_RADIUS_IN_PIXELS in app.js (0 = square);
+     overflow: clip rounds the content too without making a scroll container */
+  border-radius: var(--page-radius, 0px);
+  overflow: clip;
+  /* fixed-page-size (2026-09-28-23-12-51): --page-h-px is a reference height set by
+     app.js, so fullscreen/F11 never resizes the page.
+     page-size-no-vh (2026-09-28-23-34-29): the 88vh term is gone from the height
+     (innerHeight is rounded, vh is exact: the 1/60 px difference woke the
+     ResizeObserver on every F11). The calc() is only the fallback before app.js
+     sets the variable; max-height is a hard clamp far above the reference
+     (100vh - 16px), so it only binds when the window is really smaller. */
+  height: var(--page-h-px, calc(var(--page-height-vh) * 1vh));
+  max-height: calc(100vh - 16px);
+  aspect-ratio: var(--page-ratio);
+  max-width: calc(100vw - 40px);
+  display: flex;
+  flex-direction: column;
+  color: var(--page-text);
+}
+
+#page-header {
+  flex-shrink: 0;
+  padding: calc(var(--page-margin-pct) * 1% * 0.6) calc(var(--page-margin-pct) * 1%) 0;
+  margin-bottom: 1.3em;
+  font-style: italic;
+  font-size: 14px; /* overridden inline, scaled to content font size */
+  color: var(--page-text);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  z-index: 4;
+}
+#page-header .tri { font-size: 10px; }
+
+#viewer-host {
+  flex: 1;
+  min-height: 0;
+  padding: 4px calc(var(--page-margin-pct) * 1%);
+  position: relative;
+}
+foliate-view { width: 100%; height: 100%; display: block; }
+
+#cover-overlay {
+  position: absolute;
+  inset: 0;
+  margin: 4px calc(var(--page-margin-pct) * 1%);
+  background: var(--page-bg);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 6;
+}
+#cover-overlay.show { display: flex; }
+#cover-overlay img { max-width: 100%; max-height: 100%; }
+
+#page-footer {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px calc(var(--page-margin-pct) * 1%) calc(var(--page-margin-pct) * 1% * 0.6);
+  font-size: 14px;
+  color: var(--page-text);
+  position: relative;
+  z-index: 4;
+}
+#page-footer .footer-center {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#page-footer .pct { font-size: 12px; opacity: .8; }
+#pct-display { cursor: pointer; -webkit-user-select: text; user-select: text; } /* selectable (position-select-bar) */
+
+/* search book dialog (2026-09-27-12-28-11): fixed overlay outside the page flow,
+   so open/close never resizes the page or disturbs the reading position */
+#search-panel {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100vw - 32px);
+  padding: 10px 14px;
+  background: var(--page-bg);
+  border: 1px solid #999;
+  border-radius: 4px;
+  box-shadow: 2px 2px 12px rgba(0,0,0,.6);
+  font-size: 13px;
+  color: var(--page-text);
+}
+#search-panel.hidden { display: none !important; }
+#search-head { display: flex; align-items: center; justify-content: space-between; flex: 1 1 100%; font-weight: bold; cursor: grab; touch-action: none; }
+#search-head:active { cursor: grabbing; }
+#search-input {
+  flex: 1 1 120px;
+  min-width: 0;
+  padding: 5px 8px;
+  border: 1px solid rgba(0,0,0,.3);
+  border-radius: 3px;
+  font-family: inherit;
+  font-size: 13px;
+  background: transparent;
+  color: inherit;
+}
+#search-input.not-found { color: #c00; border-color: #c00; }
+#search-panel button {
+  background: transparent;
+  border: 1px solid rgba(128,128,128,.5);
+  border-radius: 3px;
+  padding: 4px 10px;
+  font-size: 13px;
+  color: var(--page-text);
+}
+#search-panel button:hover { background: rgba(128,128,128,.15); }
+#search-panel label { display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+#search-panel .search-sep { opacity: .4; }
+#search-status { opacity: .9; min-width: 3em; font-weight: bold; }
+
+/* themes */
+/* colors (2026-09-30-09-18-55): --page-bg / --page-text / --page-shadow are set on
+   #book-page by app.js applyTheme() from Settings > Colors; --surround on <html>. */
+
+/* when the top menu and bottom line are both fully hidden (see FLAGS in
+   app.js), collapse their reserved space entirely and give the content
+   area the same top/bottom margin as its left/right margin */
+#book-page.symmetric-margins #page-header,
+#book-page.symmetric-margins #page-footer {
+  display: none;
+}
+#book-page.symmetric-margins #viewer-host {
+  padding-top: calc(var(--page-margin-pct) * 1%);
+  padding-bottom: calc(var(--page-margin-pct) * 1%);
+}
+
+/* overlay chrome (2026-09-27-17-52-01): uniform margins always, title and
+   position absolutely overlaid onto the margin bands (zero layout impact).
+   Placed after the symmetric block on purpose: equal specificity, so these
+   rules win whenever both classes are present. */
+#book-page.overlay-chrome #viewer-host {
+  padding: calc(var(--page-margin-pct) * 1%);
+}
+#book-page.overlay-chrome #page-header {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: calc(var(--page-margin-pct) * 1% / 2) calc(var(--page-margin-pct) * 1%) 0;
+  z-index: 4;
+}
+#book-page.overlay-chrome #page-footer {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  display: flex;
+  justify-content: center;
+  margin: 0;
+  padding: 0 calc(var(--page-margin-pct) * 1%) calc(var(--page-margin-pct) * 1% / 2);
+  pointer-events: none;
+  z-index: 4;
+}
+#book-page.overlay-chrome #page-footer .pct { pointer-events: auto; }
+
+/* ---------- library ---------- */
+
+#library-view, #settings-view, #bookmarks-view {
+  position: absolute;
+  inset: 0;
+  background: var(--page-bg);
+  color: var(--page-text);
+  overflow: auto;
+  display: none;
+  z-index: 5;
+}
+#library-view.show, #settings-view.show, #bookmarks-view.show { display: block; }
+
+.view-header {
+  background: linear-gradient(135deg, var(--sidebar-2), var(--sidebar-1));
+  color: #fff;
+  padding: 28px 36px;
+  font-size: 30px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.back-btn {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,.6);
+  color: #fff;
+  border-radius: 3px;
+  padding: 6px 12px;
+  font-size: 15px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.back-btn:hover { background: rgba(255,255,255,.12); }
+.view-body .back-btn {
+  border-color: var(--accent);
+  color: var(--page-text);
+}
+.view-body .back-btn:hover { background: rgba(128,128,128,.12); }
+
+.view-body { padding: 24px 36px; max-width: 760px; }
+
+.book-row {
+  display: flex;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(0,0,0,.15);
+  cursor: pointer;
+}
+.book-row:hover { background: rgba(0,0,0,.04); }
+.book-row img {
+  width: 46px; height: 64px; object-fit: cover;
+  background: #ccc;
+  flex-shrink: 0;
+}
+.book-row .meta { display: flex; flex-direction: column; justify-content: center; }
+.book-row .title { font-size: 16px; }
+.book-row .opened { font-style: italic; font-size: 13px; opacity: .75; }
+.book-row .missing { color: red; font-size: 13px; }
+
+#import-btn, .setting-row button, #goto-jump button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 9px 16px;
+  border-radius: 3px;
+  font-size: 14px;
+}
+#import-btn:hover, .setting-row button:hover { filter: brightness(1.1); }
+
+/* ---------- settings ---------- */
+
+.setting-group { margin-bottom: 30px; }
+.setting-group h3 { font-size: 15px; text-transform: none; margin-bottom: 10px; opacity: .8; }
+
+.size-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.size-chip {
+  border: 1px solid rgba(0,0,0,.3);
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 3px;
+  font-size: 14px;
+  color: var(--page-text);
+}
+.size-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.size-chip input { width: 56px; border: 1px solid rgba(0,0,0,.3); border-radius: 3px; padding: 4px; font-family: inherit; }
+
+.theme-row, .font-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.theme-swatch {
+  width: 64px; height: 84px;
+  border: 2px solid transparent;
+  border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+}
+.theme-swatch.active { border-color: var(--accent); }
+.theme-swatch.tw { background: #fff; color: #111; }
+.theme-swatch.tc { background: #fffdf5; color: #111; }
+.theme-swatch.tn { background: #1c1c1c; color: #ddd; }
+.theme-swatch.tg { background: #000; color: #33ff66; } /* old monochrome monitors (theme-link-colors, 2026-10-09-00-33-11) */
+.theme-swatch.ta { background: #000; color: #ffb000; }
+
+.font-chip {
+  border: 1px solid rgba(0,0,0,.3);
+  background: transparent;
+  padding: 8px 14px;
+  border-radius: 3px;
+  font-size: 15px;
+  color: var(--page-text);
+}
+.font-chip.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.setting-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.setting-row input[type=text] {
+  padding: 7px 10px; border: 1px solid rgba(0,0,0,.3); border-radius: 3px; font-family: inherit;
+}
+.setting-row input[type=range] { width: 200px; }
+
+.hidden { display: none !important; }
+
+/* hide-cursor (2026-09-29-22-00-06): fullscreen idle cursor (app.js cursorActivity) */
+html.sm-hide-cursor, html.sm-hide-cursor * { cursor: none !important; }
+
+/* colors (2026-09-30-09-18-55): Settings > Colors rows */
+.color-row { align-items: center; gap: 8px; flex-wrap: wrap; }
+.color-row input[type=color] { width: 38px; height: 28px; padding: 0; border: 1px solid rgba(0,0,0,.3); background: none; }
+.color-row input[type=text] { width: 84px; font-family: monospace; padding: 4px; border: 1px solid rgba(0,0,0,.3); border-radius: 3px; }
+.color-row input.invalid { outline: 2px solid #c33; }
+.color-row.off { opacity: .5; }
+
+/* bookmarks (2026-10-01-09-10-23) */
+.book-row .pos { font-size: 13px; opacity: .75; font-variant-numeric: tabular-nums; }
+#bm-bar, #pos-bar {
+  position: fixed; left: 50%; bottom: 44px; transform: translateX(-50%); z-index: 55;
+  display: flex; flex-direction: column; background: #f2ecd8; color: #222;
+  border: 1px solid #999; border-radius: 4px; box-shadow: 2px 2px 8px rgba(0,0,0,.5);
+}
+#bm-bar .bm-row, #pos-bar .bm-row { display: flex; gap: 2px; justify-content: center; }
+#bm-preview { max-width: min(340px, calc(100vw - 32px)); max-height: 5em; overflow: auto; overscroll-behavior: contain; padding: 6px 10px; font-size: 13px; font-style: italic; white-space: pre-wrap; border-bottom: 1px solid #c9c2a8; }
+#bm-preview.hidden { display: none; }
+#bm-bar.hidden, #pos-bar.hidden { display: none; }
+#bm-bar .bm-row.hidden { display: none; }
+#bm-bar.editing { width: min(420px, calc(100vw - 16px)); }
+#bm-bar.editing .bm-row { justify-content: flex-end; }
+#bm-edit { display: block; font: inherit; font-size: 15px; width: 100%; box-sizing: border-box; padding: 8px 10px; margin: 0; resize: vertical; border: 0; border-bottom: 1px solid #c9c2a8; background: #fffdf5; color: #222; }
+#bm-edit.hidden { display: none; }
+#bm-shield { position: fixed; inset: 0; z-index: 54; }
+#bm-shield.hidden { display: none; }
+#bm-bar button, #pos-bar button { font: inherit; font-size: 14px; padding: 8px 14px; border: 0; background: none; color: #222; cursor: pointer; }
+#bm-bar button:hover:not(:disabled), #pos-bar button:hover:not(:disabled) { background: #e4dcc0; }
+#bm-bar button:disabled, #pos-bar button:disabled { opacity: .35; cursor: default; }
+/* pos-bar-toast (2026-10-04-09-48-56) */
+#toast { position: fixed; left: 50%; bottom: 64px; transform: translateX(-50%); z-index: 60; max-width: min(420px, calc(100vw - 32px)); padding: 8px 14px; border-radius: 4px; background: rgba(30,30,30,.92); color: #fff; font-size: 14px; word-break: break-word; pointer-events: none; opacity: 0; transition: opacity .2s; }
+#toast.show { opacity: 1; }
+/* close-bars-on-top-menu (2026-10-04-12-33-06): while the top menu is open the bookmark bar and the position bar are hidden
+   (the selection stays, so the menu's Bookmarks items still act on it); they come back when the menu closes */
+body:has(#goto-menu.show) #bm-bar, body:has(#goto-menu.show) #pos-bar { display: none; }
+.bm-item { padding: 10px 6px; border-bottom: 1px solid rgba(128,128,128,.3); cursor: pointer; }
+.bm-item:hover { background: rgba(128,128,128,.1); }
+.bm-top { font-size: 12px; opacity: .65; font-variant-numeric: tabular-nums; }
+.bm-text { margin: 2px 0; }
+.bm-note { font-style: italic; opacity: .85; margin: 2px 0; white-space: pre-wrap; }
+.bm-actions { display: flex; gap: 8px; margin-top: 4px; }
+.bm-actions button { font: inherit; font-size: 12px; padding: 3px 10px; cursor: pointer; }
+
+/* bookmarks round 2 (2026-10-02-08-32-16): star, ribbon, popup, shape picker */
+#pct-display.has-bm::after { content: " *"; }
+#bm-ribbon { position: absolute; top: 0; right: 16px; z-index: 30; line-height: 0; cursor: pointer; }
+#bm-ribbon.hidden { display: none; }
+#bm-ribbon.nolink { pointer-events: none; cursor: default; }
+@media (hover: hover) and (pointer: fine) { #bm-ribbon.nolink { pointer-events: auto; } } /* mouse: hover note still works; click does nothing */
+.shape-row { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.shape-btn { padding: 4px 6px; border: 2px solid transparent; background: rgba(128,128,128,.12); border-radius: 3px; cursor: pointer; line-height: 0; }
+.shape-btn.active { border-color: #2196f3; }
+#pop {
+  position: fixed; z-index: 80; width: min(420px, calc(100vw - 16px)); box-sizing: border-box;
+  border: 1px solid rgba(128,128,128,.7); border-radius: 4px; box-shadow: 2px 2px 12px rgba(0,0,0,.5);
+  display: flex; flex-direction: column;
+}
+#pop.hidden { display: none; }
+#pop-head { display: flex; justify-content: space-between; align-items: center; padding: 4px 8px; font-size: 12px; opacity: .7; border-bottom: 1px solid rgba(128,128,128,.35); }
+#pop-close { border: 0; background: none; color: inherit; font-size: 18px; line-height: 1; cursor: pointer; padding: 0 4px; }
+#pop-body { overflow-y: auto; max-height: min(60vh, 420px); padding: 8px 10px; font-size: 15px; line-height: 1.45; overscroll-behavior: contain; }
+#pop-body p { margin: 0 0 .6em; }
+.pop-text { white-space: normal; }
+.pop-note { white-space: pre-wrap; }
+#pop-foot { display: flex; justify-content: flex-end; gap: 8px; padding: 6px 8px; border-top: 1px solid rgba(128,128,128,.35); }
+#pop-foot.hidden { display: none; }
+#pop-foot button { font: inherit; font-size: 13px; padding: 4px 12px; cursor: pointer; }
+
+/* reader-polish-2 (2026-10-04-21-43-23): Yes / No question (askYesNo); the widths of the note preview and the popup are set in
+   JS from SWITCH_NOTE_WIDTH / SWITCH_DICT_POPUP_WIDTH (the CSS values above are only the fallback) */
+#yn-shield { position: fixed; inset: 0; z-index: 90; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.35); }
+#yn-shield.hidden { display: none; }
+#yn-box { box-sizing: border-box; width: min(360px, calc(100vw - 32px)); padding: 14px; border: 1px solid rgba(128,128,128,.7); border-radius: 4px; box-shadow: 2px 2px 12px rgba(0,0,0,.5); }
+#yn-text { margin: 0 0 12px; font-size: 15px; line-height: 1.4; }
+#yn-row { display: flex; justify-content: flex-end; gap: 8px; }
+#yn-row button { font: inherit; font-size: 14px; padding: 6px 18px; cursor: pointer; }
+
+/* remove-book (2026-10-07-09-30-22): the x at the right end of a Library row */
+.book-row .book-remove { margin-left: auto; align-self: center; background: none; border: none; color: inherit; font-size: 24px; line-height: 1; padding: 6px 12px; cursor: pointer; opacity: .45; }
+.book-row .book-remove:hover { opacity: 1; }
+
+/* popup-polish (2026-10-08-05-32-00): while a drag that started inside the popup is in progress (body.popup-drag, set in app.js),
+   nothing outside the popup can be swept into the selection. The position label (#pct-display) is selectable the rest of the time. */
+body.popup-drag { -webkit-user-select: none; user-select: none; }
+body.popup-drag #pop { -webkit-user-select: text; user-select: text; }
+body.popup-drag #pct-display, body.popup-drag input { -webkit-user-select: none; user-select: none; }
+
+/* link-color (2026-10-08-05-32-00): the app's own links; links inside books get their color from getCSS() in app.js */
+a { color: var(--link-color, #a67c52); }
+
+/* nav-menus (2026-10-10-06-10-00): the ▾ beside a Back button (dropdown to Library / Contents / Bookmarks / Settings), and the chapters
+   list of the Table of Contents submenu in the main menu (scrolls; its max-height is set in app.js) */
+.back-more { background: transparent; border: 1px solid rgba(255,255,255,.6); color: #fff; border-radius: 3px; padding: 6px 8px; font-size: 15px; cursor: pointer; flex-shrink: 0; margin-left: -10px; }
+.back-more:hover { background: rgba(255,255,255,.12); }
+.view-body .back-more { border-color: var(--accent); color: var(--page-text); margin-left: 4px; }
+.view-body .back-more:hover { background: rgba(128,128,128,.12); }
+#view-menu { position: fixed; z-index: 60; display: none; background: #f2ecd8; color: #222; border: 1px solid #999; box-shadow: 2px 2px 8px rgba(0,0,0,.5); min-width: 150px; }
+#view-menu.show { display: block; }
+#view-menu button { display: block; width: 100%; text-align: left; background: transparent; border: none; border-bottom: 1px solid #ccc4a8; padding: 8px 14px; font-size: 14px; cursor: pointer; }
+#view-menu button:last-child { border-bottom: none; }
+#view-menu button:hover { background: #e4dcc0; }
+#goto-menu.long { overflow-y: auto; }
+#goto-menu button.cur { font-weight: bold; }
+#goto-menu button.missing { color: red; } /* library-submenu-missing (2026-10-10-18-14-24): file-less books */

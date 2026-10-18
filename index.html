@@ -1,0 +1,321 @@
+<!-- SM Reader - index.html -->
+<!-- last modified (utc): 2026-10-10-20-52-34 -->
+<!-- instructions: on modify, update string. -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SM Reader</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+<meta name="theme-color" content="#4a0000">
+<link rel="stylesheet" href="./css/style.css">
+<!-- boot-hide (2026-09-29-22-00-06): app.js reveals #app (class sm-ready on <html>)
+     once the first view is chosen. The inline script is a last resort if
+     app.js never loads or runs, so the page can never stay invisible. -->
+<style>html:not(.sm-ready) #app { visibility: hidden; }</style>
+<script>setTimeout(function () { document.documentElement.classList.add('sm-ready') }, 5000)</script>
+</head>
+<body>
+<div id="app">
+
+  <main id="main">
+    <div id="book-page">
+      <div id="page-header"><span class="tri">▾</span><span class="title">SM Reader</span></div>
+      <div id="viewer-host"></div>
+      <div id="bm-ribbon" class="hidden" title="Bookmarks"><svg viewBox="0 0 20 34" width="20" height="34" aria-hidden="true" style="overflow:visible"><polygon id="bm-ribbon-o1" points="0,0 20,0 20,34 10,26 0,34" fill="none" stroke="#a89400" stroke-width="5" visibility="hidden"/><polygon id="bm-ribbon-o2" points="0,0 20,0 20,34 10,26 0,34" fill="none" stroke-width="3" style="stroke: var(--page-bg)" visibility="hidden"/><polygon id="bm-ribbon-poly" points="0,0 20,0 20,34 10,26 0,34" fill="#ffeb3b" stroke="#a89400" stroke-width="1"/><text id="bm-ribbon-n" x="10" y="17" text-anchor="middle" font-family="sans-serif" font-size="14" font-weight="normal" fill="#222222" visibility="hidden">n</text></svg></div>
+      <div id="cover-overlay"><img id="cover-img" alt="Cover"></div>
+      <div id="page-footer">
+        <span class="footer-center"><span class="pct" id="pct-display">0%</span></span>
+      </div>
+    </div>
+
+    <!-- Library -->
+    <div id="library-view">
+      <div class="view-header"><button class="back-btn" id="library-back-top">‹ Back</button><span id="library-header-title">Library</span></div>
+      <div class="view-body">
+        <p id="import-row"><button id="import-btn">Import EPUB…</button></p>
+        <input type="file" id="file-input" accept=".epub" multiple autocomplete="off" class="hidden">
+        <div id="library-body"></div>
+        <p><button class="back-btn" id="library-back-bottom">‹ Back</button></p>
+      </div>
+    </div>
+
+    <!-- Bookmarks (view all) -->
+    <div id="bookmarks-view">
+      <div class="view-header"><button class="back-btn" id="bookmarks-back-top">‹ Back</button><span id="bookmarks-header-title">Bookmarks</span></div>
+      <div class="view-body">
+        <div id="bookmarks-body"></div>
+        <p><button class="back-btn" id="bookmarks-back-bottom">‹ Back</button></p>
+      </div>
+    </div>
+
+    <!-- Settings -->
+    <div id="settings-view">
+      <div class="view-header"><button class="back-btn" id="settings-back-top">‹ Back</button><span id="settings-header-title">Settings</span></div>
+      <div class="view-body">
+
+        <div class="setting-group">
+          <h3>Font size</h3>
+          <div class="size-row" id="size-chips"></div>
+          <div class="setting-row">
+            <label>Custom size:</label>
+            <input type="number" id="custom-size" min="6" max="120">
+            <span>px</span>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <h3>Font</h3>
+          <div class="font-row" id="font-chips"></div>
+          <div class="setting-row">
+            <label>Or type an installed font name:</label>
+            <input type="text" id="custom-font-name" placeholder="e.g. Futura">
+          </div>
+          <div class="setting-row">
+            <label>Or upload a font file:</label>
+            <input type="file" id="font-upload" accept=".ttf,.otf,.woff,.woff2">
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <h3>Theme</h3>
+          <div class="setting-row">
+            <select id="theme-select"></select>
+            <div id="theme-preview" class="theme-swatch" style="width:120px;overflow:hidden;text-align:center;word-break:break-word"></div>
+          </div>
+          <div class="setting-row">
+            <button id="theme-save-btn" type="button">Save as…</button>
+          </div>
+          <div class="setting-row">
+            <label>Make default for</label>
+            <label><input type="checkbox" id="theme-default-book"> this book</label>
+            <label><input type="checkbox" id="theme-default-all"> all</label>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <h3>Colors</h3>
+          <div class="setting-row color-row">
+            <label style="width:110px">Monitor</label>
+            <select id="monitor-color"><option value="black">Black</option><option value="cream">Cream</option><option value="darkgray">Dark gray</option><option value="white">White</option><option value="custom">Custom</option></select>
+            <span id="monitor-color-custom" class="hidden"><input type="color" id="monitor-color-pick"> <input type="text" id="monitor-color-hex" maxlength="7" placeholder="#ff8800" spellcheck="false"></span>
+          </div>
+          <div class="setting-row color-row">
+            <label style="width:110px">Page</label>
+            <select id="page-color"><option value="black">Black</option><option value="cream">Cream</option><option value="darkgray">Dark gray</option><option value="white">White</option><option value="custom">Custom</option></select>
+            <span id="page-color-custom" class="hidden"><input type="color" id="page-color-pick"> <input type="text" id="page-color-hex" maxlength="7" placeholder="#ff8800" spellcheck="false"></span>
+          </div>
+          <div class="setting-row color-row">
+            <label style="width:110px">Font</label>
+            <select id="font-color"><option value="black">Black</option><option value="cream">Cream</option><option value="darkgray">Dark gray</option><option value="white">White</option><option value="custom">Custom</option></select>
+            <span id="font-color-custom" class="hidden"><input type="color" id="font-color-pick"> <input type="text" id="font-color-hex" maxlength="7" placeholder="#ff8800" spellcheck="false"></span>
+          </div>
+          <div class="setting-row color-row">
+            <label style="width:110px">Link color</label>
+            <input type="color" id="link-color-pick"> <input type="text" id="link-color-hex" maxlength="7" placeholder="#a67c52" spellcheck="false" title="Empty = the default link color">
+          </div>
+          <div class="setting-row"><label><input type="checkbox" id="page-shadow"> Page shadow</label></div>
+          <p style="font-size:13px;opacity:.7;max-width:420px">Monitor is the area around the page. On a phone, set it to the same color as the page so the whole screen looks like the page. Custom colors: type a hex color, e.g. #ff8800, ff8800 or f80. A theme sets monitor, page, font and link colors.</p>
+        </div>
+
+        <div class="setting-group">
+          <h3>Bookmarks</h3>
+          <div class="setting-row color-row">
+            <label style="width:110px">Mark</label>
+            <input type="color" id="mark-color-pick"> <input type="text" id="mark-color-hex" maxlength="7" placeholder="#2196f3" spellcheck="false">
+          </div>
+          <div class="setting-row color-row">
+            <label style="width:110px">Bookmark</label>
+            <input type="color" id="bookmark-color-pick"> <input type="text" id="bookmark-color-hex" maxlength="7" placeholder="#ffeb3b" spellcheck="false">
+          </div>
+          <div class="setting-row"><label><input type="checkbox" id="bm-bar-enabled"> Small bookmark bar (shown while text is selected or a bookmark is tapped)</label></div>
+          <div class="setting-row"><label><input type="checkbox" id="bm-note-hover-enabled"> Show a bookmark's note when the mouse rests on it</label></div>
+          <div class="setting-row"><label><input type="checkbox" id="bm-star-enabled"> Show * after the position when the page has a page bookmark</label></div>
+          <div class="setting-row"><label><input type="checkbox" id="bm-ribbon-enabled"> Show a ribbon on a page with a page bookmark</label></div>
+          <div class="setting-row"><label><input type="checkbox" id="bm-ribbon-clickable"> Clicking the ribbon shows the bookmark bar</label></div>
+          <div class="setting-row">
+            <label style="width:110px">Ribbon shape</label>
+            <span id="ribbon-shapes" class="shape-row"></span>
+          </div>
+          <div class="setting-row"><label><input type="checkbox" id="bm-ribbon-same-color"> Use same color as bookmark</label></div>
+          <div class="setting-row color-row">
+            <label style="width:110px">Ribbon color</label>
+            <input type="color" id="ribbon-color-pick"> <input type="text" id="ribbon-color-hex" maxlength="7" placeholder="#ffeb3b" spellcheck="false">
+          </div>
+          <p style="font-size:13px;opacity:.7;max-width:420px">Mark is the highlight of the saved reading position after a reload or resize. Bookmark is the highlight of bookmarked text; text with a note is also underlined.</p>
+        </div>
+
+        <div class="setting-group">
+          <h3>Footnotes</h3>
+          <div class="setting-row"><label><input type="checkbox" id="fn-popup-enabled"> Show a footnote in a popup window instead of jumping to it</label></div>
+          <div class="setting-row"><label><input type="checkbox" id="fn-hover-enabled"> Also when the mouse rests on the note marker</label></div>
+        </div>
+
+        <div class="setting-group">
+          <h3>Mouse</h3>
+          <div class="setting-row">
+            <label style="width:150px">Mouse wheel click</label>
+            <select id="wheel-click"><option value="dictionary">Dictionary</option><option value="select">Select word</option><option value="menu">Menu</option><option value="none">None</option></select>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <h3>Dictionary</h3>
+          <div class="setting-row">
+            <label style="width:150px">Show definition</label>
+            <select id="dict-show"><option value="automatic">Always</option><option value="request">On request</option><option value="never">Never</option></select>
+          </div>
+          <div class="setting-row">
+            <label style="width:150px">Import dictionary at</label>
+            <select id="dict-load"><option value="start">Start</option><option value="settings">Import button</option><option value="use">First lookup</option><option value="never">Never</option></select>
+          </div>
+          <div class="setting-row">
+            <label style="width:150px">Dictionary file</label>
+            <select id="dict-file"></select>
+            <input type="file" id="dict-file-input" accept=".json,.gz" class="hidden">
+          </div>
+          <div class="setting-row">
+            <button id="dict-import-btn">Import dictionary</button>
+            <button id="dict-remove-btn">Remove dictionary</button>
+          </div>
+          <p id="dict-status" style="font-size:13px;opacity:.7;max-width:420px"></p>
+          <p style="font-size:13px;opacity:.7;max-width:420px">Open English WordNet 2025, trimmed copy (definitions only). CC BY 4.0, based on Princeton WordNet. <a href="./dict/LICENSE-oewn.txt" target="_blank" rel="noopener">Licence</a></p>
+        </div>
+
+        <div class="setting-group">
+          <h3>Line spacing</h3>
+          <div class="setting-row">
+            <input type="range" id="line-spacing" min="1" max="2.2" step="0.1">
+            <span id="line-spacing-val"></span>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <h3>Page geometry</h3>
+          <div class="setting-row">
+            <label style="width:110px">Page size</label>
+            <input type="range" id="page-size" min="55" max="98" step="1">
+            <span id="page-size-val"></span>
+          </div>
+          <div class="setting-row">
+            <label style="width:110px">Frame size</label>
+            <input type="range" id="frame-size" min="2" max="25" step="1">
+            <span id="frame-size-val"></span>
+          </div>
+          <div class="setting-row">
+            <label style="width:110px">Rounded corners</label>
+            <input type="range" id="rounded-corners" min="0" max="15" step="1">
+            <span id="rounded-corners-val"></span>
+          </div>
+          <div class="setting-row">
+            <label style="width:110px">Proportions</label>
+            <select id="page-ratio"><option value="reader">Reader classic (3:4)</option><option value="a4">A4</option><option value="letter">Letter</option></select>
+          </div>
+          <p style="font-size:13px;opacity:.7;max-width:420px">Page size is the white page against the dark surround. Frame size is the blank margin between the page's edge and the text — a smaller frame means more content per page.</p>
+        </div>
+
+        <div class="setting-group">
+          <h3>Show / hide</h3>
+          <div class="setting-row">
+            <label style="width:150px">Position decimals</label>
+            <select id="pct-decimals"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option></select>
+          </div>
+          <div class="setting-row">
+            <label><input type="checkbox" id="start-fullscreen"> Start in full screen</label>
+          </div>
+          <div class="setting-row">
+            <label><input type="checkbox" id="keep-awake"> Keep the screen on while reading (needs https or localhost)</label>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <h3>Position</h3>
+          <div class="setting-row">
+            <label><input type="checkbox" id="click-position-goto"> Click on position for goto menu</label>
+          </div>
+          <div class="setting-row">
+            <button id="reset-furthest-btn">Reset current furthest read</button>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <h3>Export &amp; Import settings</h3>
+          <div class="setting-row">
+            <button id="export-btn">Export…</button>
+            <button id="import-btn-settings">Import…</button>
+            <input type="file" id="import-file-input" accept=".json" class="hidden">
+          </div>
+          <div class="setting-row">
+            <label><input type="checkbox" id="export-books"> Include books on export</label>
+          </div>
+          <p style="font-size:13px;opacity:.7;max-width:420px">Exports your settings, reading positions, and library metadata as one JSON file you can keep as a backup or move to another device. Tick Include books to embed the EPUB files too (makes the backup much larger).</p>
+        </div>
+
+        <div class="setting-group">
+          <h3>App</h3>
+          <p id="app-version" style="font-size:13px;opacity:.7;margin:0 0 6px"></p>
+          <div class="setting-row hidden" id="app-update-row">
+            <span id="app-update-text">App update ready.</span>
+            <button id="app-update-btn">Reload</button>
+          </div>
+          <div class="setting-row">
+            <button id="fresh-app-btn">Load fresh app</button>
+          </div>
+          <p style="font-size:13px;opacity:.7;max-width:420px">Reloads the latest app version (updates, clears cached files, then reloads). Use this if the app behaves like an older version.</p>
+          <div class="setting-row">
+            <label style="width:150px">Keep app in cache</label>
+            <select id="keep-app"><option value="auto">Auto</option><option value="true">Yes</option><option value="false">No</option></select>
+          </div>
+          <div class="setting-row">
+            <button id="offline-remove-btn">Remove offline copy</button>
+          </div>
+          <p id="offline-status" style="font-size:13px;opacity:.7;max-width:420px"></p>
+          <p style="font-size:13px;opacity:.7;max-width:420px">Yes keeps the app's files so it opens without internet (needs https or localhost). No keeps nothing. Auto is Yes on a website and No while developing on localhost. Your books, bookmarks, settings and dictionary are not affected.</p>
+        </div>
+
+        <p><button class="back-btn" id="settings-back-bottom">‹ Back</button></p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- merged menu (2026-09-27-17-03-37): lives outside #sidebar on purpose —
+     the sidebar hides with no way back, and display:none would hide the
+     menu with it. Fixed-centered via CSS, like #search-panel below. -->
+<div id="goto-menu"></div>
+
+<!-- search-book dialog (2026-09-27-12-28-11): fixed overlay outside #book-page,
+     so open/close never changes page geometry or reading position -->
+<div id="search-panel" class="hidden">
+  <div id="search-head"><span>Search book</span><button id="search-close">✕</button></div>
+  <input type="text" id="search-input" placeholder="Search book…">
+  <button id="search-prev">Previous</button>
+  <button id="search-next">Next</button>
+  <label><input type="checkbox" id="search-wrap"> Wrap around</label>
+  <span class="search-sep">|</span>
+  <span id="search-status"></span>
+</div>
+
+<!-- small bookmark bar (shown while book text is selected) and the one note editor (the bar in edit mode) -->
+<div id="bm-shield" class="hidden"></div>
+<div id="bm-bar" class="hidden">
+  <div id="bm-preview" class="hidden"></div>
+  <textarea id="bm-edit" class="hidden" rows="4" placeholder="Note (optional)"></textarea>
+  <div class="bm-row" id="bm-row-main"><button id="bm-meaning">Meaning</button><button id="bm-copy">Copy</button><button id="bm-bookmark">Bookmark</button><button id="bm-note">Note</button></div>
+  <div class="bm-row hidden" id="bm-row-edit"><button id="bm-edit-cancel">Cancel</button><button id="bm-edit-save">Save</button></div>
+</div>
+<!-- selected position bar (position-select-bar): Copy / Goto while the position text is selected -->
+<div id="pos-bar" class="hidden"><div class="bm-row"><button id="pos-copy">Copy</button><button id="pos-goto">Goto</button></div></div>
+<div id="pop" class="hidden">
+  <div id="pop-head"><span id="pop-title"></span><button id="pop-close" aria-label="Close">×</button></div>
+  <div id="pop-body"></div>
+  <div id="pop-foot" class="hidden"></div>
+</div>
+<!-- Yes / No question (askYesNo in app.js); No has the focus -->
+<div id="yn-shield" class="hidden"><div id="yn-box" role="dialog" aria-modal="true"><p id="yn-text"></p><div id="yn-row"><button id="yn-yes">Yes</button><button id="yn-no">No</button><button id="yn-cancel">Cancel</button></div></div></div>
+<script type="module" src="./js/app.js"></script>
+</body>
+</html>

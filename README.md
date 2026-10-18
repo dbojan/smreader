@@ -7,7 +7,7 @@ Menu and position are hide-able.
 
 PWA app, preview available for now.
 
-![screen01](screen01.png)
+![screen01](screenshots/screen01.png)
 
 "*A thing of beauty is a joy for ever ...*"
 

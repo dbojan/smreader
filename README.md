@@ -3,9 +3,11 @@ Mirror or old MS (Microsoft) book reader, with white page on black background
 
 Mobile and desktop.
 
-Menu and position are hide-able.
+To install point your browser to https://dbojan.github.io/smreader/ , and wait for "Install complete" message at the bottom. You can use the app offline afterwards.
 
-PWA app, preview available for now.
+You can also run your own server, and install using localhost: `python3 -m http.server 7777`
+
+Menu and position are hide-able.
 
 ![screen01](screenshots/screen01.png)
 

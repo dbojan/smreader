@@ -6,7 +6,7 @@ Mirror or old MS (Microsoft) book reader, with white page on black background
 
 Mobile and desktop.
 
-To install point your browser to https://dbojan.github.io/smreader/ , and wait for "Install complete" message at the bottom. You can use the app offline afterwards.
+To install PWA point your browser to https://dbojan.github.io/smreader/ , and wait for "Install complete" message at the bottom. You can use the app offline afterwards, just recall that bookmark location.
 
 Note that for app to work offline (without server), it has to be installed from https, or localhost
 

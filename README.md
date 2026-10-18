@@ -8,7 +8,7 @@ Mobile and desktop.
 
 To install point your browser to https://dbojan.github.io/smreader/ , and wait for "Install complete" message at the bottom. You can use the app offline afterwards.
 
-You can also run your own server, and install using localhost: `python3 -m http.server 7777`
+You can also run your own server, and install using localhost: `python3 -m http.server 7777`(note that for app to work offline (without server), it has to be installed from https, or localhost)
 
 On Linux/Chromium don't use double click to open import file, use 'Open file' button when importing books, doubleclick somehow auto fires cancel.
 

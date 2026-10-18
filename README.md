@@ -7,6 +7,8 @@ To install point your browser to https://dbojan.github.io/smreader/ , and wait f
 
 You can also run your own server, and install using localhost: `python3 -m http.server 7777`
 
+On Linux/Chromium don't use double click to open import file, use 'Open file' button when importing books, doubleclick somehow auto fires cancel.
+
 Menu and position are hide-able.
 
 ![screen01](screenshots/screen01.png)

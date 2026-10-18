@@ -1,10 +1,10 @@
 // SM Reader - sw.js
-// last modified (utc): 2026-10-10-21-24-31
+// last modified (utc): 2026-10-18-15-30-19
 // instructions: on modify, update string.
 // scope-safe (2026-10-07-12-54-28): the cache name has a prefix, and only caches with it (or the plain stamp names used before)
 // are ever deleted: other apps on the same address (username.github.io) keep their caches. CACHE_PREFIX = OWN_CACHE_PREFIX in js/app.js.
 const CACHE_PREFIX = 'sm-reader-'
-const CACHE = CACHE_PREFIX + '2026-10-10-21-24-31'
+const CACHE = CACHE_PREFIX + '2026-10-18-15-30-19'
 const ASSETS = [
   './',
   './index.html',
